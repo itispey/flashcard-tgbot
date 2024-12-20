@@ -19,7 +19,7 @@ repos:
       - id: isort
 
   - repo: https://github.com/PyCQA/autoflake
-    rev: v1.4
+    rev: v2.3.1
     hooks:
       - id: autoflake
         args: ["--remove-all-unused-imports", "--ignore-init-module-imports"]
