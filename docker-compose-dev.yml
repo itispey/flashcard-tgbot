@@ -1,0 +1,21 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: flashcard-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASS}
+      MYSQL_DATABASE: ${MYSQL_NAME}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASS}
+    ports:
+      - "3306:3306"
+    volumes:
+      - flashcard-mysql-data:/var/lib/mysql
+    networks:
+      - flashcard-network
+
+networks:
+  flashcard-network:
+
+volumes:
+  flashcard-mysql-data:
