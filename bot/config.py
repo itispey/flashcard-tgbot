@@ -1,4 +1,4 @@
-from decouple import config, Csv
+from decouple import Csv, config
 
 
 class Config:
@@ -18,4 +18,7 @@ class Config:
 
     POOL_PRE_PING = config("POOL_PRE_PING", default=True, cast=bool)
     POOL_RECYCLE = config("POOL_RECYCLE", default=28000, cast=int)
-    
+
+    DATABASE_URL = (
+        f"mysql+mysqldb://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"  # noqa
+    )
