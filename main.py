@@ -1,7 +1,10 @@
 import logging
 
-from config import Config
 from telegram.ext import ApplicationBuilder
+
+from bot import models
+from bot.utils.db import engine
+from config import Config
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -20,14 +23,11 @@ def main() -> None:
             .build()
         )
     else:
-        app = (
-            ApplicationBuilder()
-            .token(Config.TOKEN)
-            .build()
-        )
+        app = ApplicationBuilder().token(Config.TOKEN).build()
 
     app.run_polling()
 
 
 if __name__ == "__main__":
+    models.Base.metadata.create_all(bind=engine)
     main()
