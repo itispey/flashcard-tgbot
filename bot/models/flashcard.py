@@ -1,10 +1,9 @@
 from typing import Optional
 
 from sqlalchemy import ForeignKey, String, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from bot.models.base import BaseModelMixin
-from bot.models.collection import Collection
 from bot.utils.db import Base
 
 
@@ -20,7 +19,7 @@ class Flashcard(Base, BaseModelMixin):
     example: Mapped[Optional[str]] = mapped_column(Text)
     collection_id: Mapped[int] = mapped_column(ForeignKey("collections.id"))
 
-    collection: Mapped["Collection"] = relationship(back_populates="flashcards")
+    # collection: Mapped["Collection"] = relationship(back_populates="flashcards")
 
     def __repr__(self):
         return f"<Flashcard {self.term}>"
