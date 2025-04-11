@@ -1,3 +1,5 @@
+from urllib.parse import quote_plus
+
 from decouple import Csv, config
 
 
@@ -13,7 +15,7 @@ class Config:
     DB_HOST = config("MYSQL_HOST", default="localhost")
     DB_PORT = config("MYSQL_PORT", default="3306")
     DB_USER = config("MYSQL_USER", default="root")
-    DB_PASS = config("MYSQL_PASS")
+    DB_PASS = quote_plus(config("MYSQL_PASS"))
     DB_NAME = config("MYSQL_NAME")
 
     POOL_PRE_PING = config("POOL_PRE_PING", default=True, cast=bool)
