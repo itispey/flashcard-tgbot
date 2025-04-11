@@ -3,6 +3,7 @@ import logging
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
+from bot.keyboards.main import main_inline_keyboard
 from bot.models.user import User
 from bot.utils.db import SessionLocal
 
@@ -24,7 +25,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
         logger.info(f"User {user} {'created' if created else 'fetched'}")
 
-    await update.message.reply_text("Hello, I'm a bot!")
+    text = f"Hello. Welcome to the {context.bot.first_name} bot."
+    reply_markup = main_inline_keyboard()
+    await update.message.reply_text(text, reply_markup=reply_markup)
 
 
 MAIN_HANDLER = [CommandHandler("start", start)]

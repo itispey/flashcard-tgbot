@@ -3,6 +3,7 @@ import logging
 from telegram.ext import ApplicationBuilder
 
 from bot import models
+from bot.handlers.category import CATEGORY_HANDLER
 from bot.handlers.main import MAIN_HANDLER
 from bot.utils.db import engine
 from config import Config
@@ -27,6 +28,7 @@ def main() -> None:
         app = ApplicationBuilder().token(Config.TOKEN).build()
 
     app.add_handlers(MAIN_HANDLER)
+    app.add_handlers(CATEGORY_HANDLER)
 
     app.run_polling()
 
