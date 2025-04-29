@@ -16,5 +16,5 @@ def main_inline_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
-def back_inline_keyboard(target_menu: str) -> list[InlineKeyboardButton]:
+def return_inline_keyboard(target_menu: str) -> list[InlineKeyboardButton]:
     return [InlineKeyboardButton(text="🔙 Back", callback_data=target_menu)]
