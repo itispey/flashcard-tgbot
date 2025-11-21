@@ -12,7 +12,7 @@ from telegram.ext import (
 from bot.keyboards.category import my_categories_inline_keyboard
 from bot.keyboards.main import return_inline_keyboard
 from bot.models.category import Category
-from bot.utils.db import SessionLocal
+from bot.utils.helpers.db import SessionLocal
 
 logger = logging.getLogger(__name__)
 

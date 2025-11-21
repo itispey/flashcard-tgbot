@@ -2,7 +2,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 from bot.models.base import BaseModelMixin
-from bot.utils.db import Base
+from bot.utils.helpers.db import Base
 
 
 class FlashcardStudy(Base, BaseModelMixin):

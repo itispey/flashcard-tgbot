@@ -1,6 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Table
 
-from bot.utils.db import Base
+from bot.utils.helpers.db import Base
 
 user_categories = Table(
     "user_categories",

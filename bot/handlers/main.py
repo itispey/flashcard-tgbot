@@ -1,16 +1,17 @@
 import logging
 
 from telegram import Update
-from telegram.ext import CommandHandler, ContextTypes
+from telegram.ext import CommandHandler
 
 from bot.keyboards.main import main_inline_keyboard
 from bot.models.user import User
-from bot.utils.db import SessionLocal
+from bot.utils.helpers.context import CustomContext
+from bot.utils.helpers.db import SessionLocal
 
 logger = logging.getLogger(__name__)
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start(update: Update, context: CustomContext) -> None:
     tg_user = update.effective_user
 
     with SessionLocal() as session:
@@ -25,7 +26,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
         logger.info(f"User {user} {'created' if created else 'fetched'}")
 
-    text = f"Hello. Welcome to the {context.bot.first_name} bot."
+    text = context._("Hello. Welcome to the bot.")
     reply_markup = main_inline_keyboard()
     await update.message.reply_text(text, reply_markup=reply_markup)
 

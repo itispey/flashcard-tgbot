@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from bot.models.base import BaseModelMixin
 from bot.models.category import Category
-from bot.utils.db import Base
+from bot.utils.helpers.db import Base
 
 
 class User(Base, BaseModelMixin):

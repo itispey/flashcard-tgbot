@@ -1,4 +1,4 @@
-from bot.utils.db import Base
+from bot.utils.helpers.db import Base
 
 from .category import Category
 from .collection import Collection
