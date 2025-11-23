@@ -1,5 +1,0 @@
-babel==2.17.0
-mysqlclient==2.2.7
-python-decouple==3.8
-python-telegram-bot==22.5
-SQLAlchemy==2.0.44
