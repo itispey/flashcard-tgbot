@@ -1,20 +1,35 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+from bot.utils.helpers.context import CustomContext
 
-def main_inline_keyboard() -> InlineKeyboardMarkup:
+
+def main_inline_keyboard(context: CustomContext) -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton("My Categories", callback_data="main:my_categories")],
         [
             InlineKeyboardButton(
-                "Public Categories", callback_data="main:public_categories"
+                context._("Categories"), callback_data="main:my_categories"
             )
         ],
-        [InlineKeyboardButton("About Me", callback_data="main:about_me")],
-        [InlineKeyboardButton("Our Channel", url="https://google.com")],
+        [
+            InlineKeyboardButton(
+                context._("Public Categories"), callback_data="main:public_categories"
+            )
+        ],
     ]
 
     return InlineKeyboardMarkup(keyboard)
 
 
-def return_inline_keyboard(target_menu: str) -> list[InlineKeyboardButton]:
-    return [InlineKeyboardButton(text="🔙 Back", callback_data=target_menu)]
+def select_language_keyboard() -> InlineKeyboardMarkup:
+    keyboard = [
+        [InlineKeyboardButton("English 🇬🇧", callback_data="set_lang:en")],
+        [InlineKeyboardButton("فارسی 🇮🇷", callback_data="set_lang:fa")],
+    ]
+
+    return InlineKeyboardMarkup(keyboard)
+
+
+def return_inline_keyboard(
+    context: CustomContext, target_menu: str
+) -> list[InlineKeyboardButton]:
+    return [InlineKeyboardButton(text=context._("🔙 Back"), callback_data=target_menu)]
