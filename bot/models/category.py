@@ -1,10 +1,14 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Boolean, ForeignKey, String
+from sqlalchemy import Boolean, ForeignKey, String, func, select
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from bot.models.base import BaseModelMixin
 from bot.utils.helpers.db import Base
+
+if TYPE_CHECKING:
+    from bot.models.user import User
 
 
 class Category(Base, BaseModelMixin):
@@ -16,11 +20,27 @@ class Category(Base, BaseModelMixin):
     is_public: Mapped[bool] = mapped_column(Boolean, default=False)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    # we can't use Mapped here because it's a circular import
-    author = relationship("User", back_populates="categories")
-    subscribers = relationship(
-        "User", secondary="user_categories", back_populates="subscribed_categories"
+    author: Mapped["User"] = relationship(back_populates="categories")
+    subscribers: Mapped[list["User"]] = relationship(
+        secondary="user_categories", back_populates="subscribed_categories"
     )
 
     def __repr__(self):
         return f"<Category {self.name} by user {self.author_id}>"
+
+    @hybrid_property
+    def subscribers_count(self):
+        return len(self.subscribers)
+
+    @subscribers_count.expression
+    def subscribers_count(cls):
+        from bot.models.user import User
+
+        return (
+            select(func.count(User.id))
+            .select_from(cls)
+            .join(cls.subscribers)
+            .where(cls.id == cls.id)
+            .correlate(cls)
+            .scalar_subquery()
+        )

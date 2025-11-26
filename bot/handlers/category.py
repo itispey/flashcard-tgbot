@@ -9,29 +9,23 @@ from telegram.ext import (
     filters,
 )
 
-from bot.keyboards.category import my_categories_inline_keyboard
+from bot.keyboards.category import (
+    edit_category_inline_keyboard,
+    my_categories_inline_keyboard,
+)
 from bot.keyboards.main import return_inline_keyboard
 from bot.models.category import Category
 from bot.utils.helpers.db import SessionLocal
+from bot.utils.helpers.handlers import end_conversation
 
 logger = logging.getLogger(__name__)
 
 CATEGORY_NAME = 1
 
 
-async def my_categories_callback(
+async def my_categories_menu(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    """
-    Handles the callback for displaying the user's categories.
-    This function is triggered when the user interacts with the "My Categories" button
-    in the bot's interface. It retrieves the user's categories from the database, paginates
-    them, and updates the message with the list of categories or a prompt to create a new one.
-
-    Args:
-        update (Update): The incoming update from the Telegram bot, containing the callback query.
-        context (ContextTypes.DEFAULT_TYPE): The context object for the current conversation.
-    """
     query = update.callback_query
     blocks = query.data.split(":")
     page_number = int(blocks[3]) if len(blocks) == 4 else 1
@@ -46,8 +40,9 @@ async def my_categories_callback(
         else:
             text = "Here's are your categories:"
 
+        categories_data = [(cat.id, cat.name) for cat in categories]
         reply_markup = my_categories_inline_keyboard(
-            data=[(cat.id, cat.name) for cat in categories],
+            data=categories_data,
             current_menu="main:my_categories",
             current_page=page_number,
             total_pages=total_pages,
@@ -62,13 +57,12 @@ async def create_category_callback(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
     query = update.callback_query
+    text = "Please write a name for the category."
     reply_markup = InlineKeyboardMarkup(
         [return_inline_keyboard(target_menu="main:my_categories")]
     )
     await query.answer()
-    await query.edit_message_text(
-        text="Please send the category name.", reply_markup=reply_markup
-    )
+    await query.edit_message_text(text=text, reply_markup=reply_markup)
     return CATEGORY_NAME
 
 
@@ -87,17 +81,105 @@ async def create_category_message(
     return ConversationHandler.END
 
 
+async def cancel_category_creation(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> int:
+    return await end_conversation(update, context)
+
+
+async def edit_category_menu(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    query = update.callback_query
+    blocks = query.data.split(":")
+    category_id = int(blocks[3])
+
+    with SessionLocal() as session:
+        category = Category.get(db=session, id=category_id)
+
+        if not category:
+            await query.answer("Category not found.", True)
+            return
+
+        text = (
+            "Editing Category:"
+            "\n"
+            f"\n- Name: {category.name}"
+            f"\n- Current Visibility: {category.is_public and 'Public' or 'Private'}"
+            f"\n- Subscribers: {category.subscribers_count}"
+        )
+        reply_markup = edit_category_inline_keyboard(
+            category_id=category.id,
+            is_public=category.is_public,
+        )
+
+        await query.answer()
+        await query.edit_message_text(text=text, reply_markup=reply_markup)
+
+
+async def edit_category_callback(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    query = update.callback_query
+    blocks = query.data.split(":")
+    category_id = int(blocks[3])
+    action = blocks[4]
+
+    with SessionLocal() as session:
+        category = Category.get(db=session, id=category_id)
+
+        if not category:
+            await query.answer("Category not found.", True)
+            return
+
+        if action == "change_visibility":
+            category.is_public = not category.is_public
+            session.commit()
+            await query.answer("Category visibility updated.")
+        elif action == "delete":
+            category.is_deleted = True
+            session.commit()
+            await query.answer("Category deleted.")
+            # TODO: Ask user for confirmation before deletion
+            # TODO: Redirect to my categories menu after deletion
+
+        text = (
+            "Editing Category:"
+            "\n"
+            f"\n- Name: {category.name}"
+            f"\n- Current Visibility: {category.is_public and 'Public' or 'Private'}"
+            f"\n- Subscribers: {category.subscribers_count}"
+        )
+        reply_markup = edit_category_inline_keyboard(
+            category_id=category.id,
+            is_public=category.is_public,
+        )
+        await query.edit_message_text(text=text, reply_markup=reply_markup)
+
+
 CATEGORY_HANDLER = [
-    CallbackQueryHandler(my_categories_callback, pattern="^main:my_categories"),
     ConversationHandler(
         entry_points=[
-            CallbackQueryHandler(create_category_callback, pattern="^category:create")
+            CallbackQueryHandler(
+                create_category_callback, pattern="^main:my_categories:create$"
+            )
         ],
         states={
             CATEGORY_NAME: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, create_category_message)
             ]
         },
-        fallbacks=[],
+        fallbacks=[
+            CallbackQueryHandler(
+                cancel_category_creation, pattern="^main:my_categories$"
+            )
+        ],
+    ),
+    CallbackQueryHandler(my_categories_menu, pattern="^main:my_categories$"),
+    CallbackQueryHandler(
+        edit_category_menu, pattern=r"^main:my_categories:settings:\d+$"
+    ),
+    CallbackQueryHandler(
+        edit_category_callback, pattern=r"^main:my_categories:settings:\d+:\w+$"
     ),
 ]

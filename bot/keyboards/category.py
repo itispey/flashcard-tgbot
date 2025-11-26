@@ -7,7 +7,7 @@ from bot.keyboards.paginated_inline_keyboard import build_paginated_inline_keybo
 def create_category_inline_keyboard() -> list[InlineKeyboardButton]:
     return [
         InlineKeyboardButton(
-            text="+ Create a category", callback_data="category:create"
+            text="+ Create a category", callback_data="main:my_categories:create"
         )
     ]
 
@@ -26,3 +26,30 @@ def my_categories_inline_keyboard(
     paginated_keyboard.append(return_inline_keyboard(target_menu=return_to_menu))
 
     return InlineKeyboardMarkup(paginated_keyboard)
+
+
+def edit_category_inline_keyboard(
+    category_id: int, is_public: bool
+) -> InlineKeyboardMarkup:
+    visibility = "Public 🔓" if is_public else "Private 🔒"
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                text=("Visibility: {visibility}").format(visibility=visibility),
+                callback_data=f"main:my_categories:settings:{category_id}:change_visibility",
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Delete Category ❌",
+                callback_data=f"main:my_categories:settings:{category_id}:delete",
+            )
+        ],
+    ]
+    keyboard.append(
+        return_inline_keyboard(
+            target_menu="main:my_categories",
+        )
+    )
+
+    return InlineKeyboardMarkup(keyboard)
