@@ -17,8 +17,8 @@ class Category(Base, BaseModelMixin):
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255))
     author_id: Mapped[int] = mapped_column(ForeignKey("users.tg_id"))
-    is_public: Mapped[bool] = mapped_column(Boolean, default=False)
-    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_public: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
 
     author: Mapped["User"] = relationship(back_populates="categories")
     subscribers: Mapped[list["User"]] = relationship(

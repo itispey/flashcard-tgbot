@@ -13,6 +13,7 @@ from bot.keyboards.category import (
     edit_category_inline_keyboard,
     my_categories_inline_keyboard,
 )
+from bot.keyboards.confirmation import confirmation_inline_keyboard
 from bot.keyboards.main import return_inline_keyboard
 from bot.models.category import Category
 from bot.utils.helpers.db import SessionLocal
@@ -20,6 +21,7 @@ from bot.utils.helpers.handlers import end_conversation
 
 logger = logging.getLogger(__name__)
 
+MENU_MY_CATEGORIES = "main:my_categories"
 CATEGORY_NAME = 1
 
 
@@ -32,7 +34,10 @@ async def my_categories_menu(
 
     with SessionLocal() as session:
         categories, total_pages = Category.paginate(
-            db=session, current_page=page_number, per_page=5
+            db=session,
+            current_page=page_number,
+            per_page=5,
+            filters={"is_deleted": False},
         )
 
         if not categories:
@@ -43,7 +48,7 @@ async def my_categories_menu(
         categories_data = [(cat.id, cat.name) for cat in categories]
         reply_markup = my_categories_inline_keyboard(
             data=categories_data,
-            current_menu="main:my_categories",
+            current_menu=MENU_MY_CATEGORIES,
             current_page=page_number,
             total_pages=total_pages,
             return_to_menu="main",
@@ -59,7 +64,7 @@ async def create_category_callback(
     query = update.callback_query
     text = "Please write a name for the category."
     reply_markup = InlineKeyboardMarkup(
-        [return_inline_keyboard(target_menu="main:my_categories")]
+        [return_inline_keyboard(target_menu=MENU_MY_CATEGORIES)]
     )
     await query.answer()
     await query.edit_message_text(text=text, reply_markup=reply_markup)
@@ -95,7 +100,7 @@ async def edit_category_menu(
     category_id = int(blocks[3])
 
     with SessionLocal() as session:
-        category = Category.get(db=session, id=category_id)
+        category = Category.filter(db=session, id=category_id, is_deleted=False).first()
 
         if not category:
             await query.answer("Category not found.", True)
@@ -126,7 +131,7 @@ async def edit_category_callback(
     action = blocks[4]
 
     with SessionLocal() as session:
-        category = Category.get(db=session, id=category_id)
+        category = Category.filter(db=session, id=category_id, is_deleted=False).first()
 
         if not category:
             await query.answer("Category not found.", True)
@@ -136,12 +141,25 @@ async def edit_category_callback(
             category.is_public = not category.is_public
             session.commit()
             await query.answer("Category visibility updated.")
-        elif action == "delete":
+
+        if action == "delete":
+            reply_markup = confirmation_inline_keyboard(
+                confirm_callback=f"{MENU_MY_CATEGORIES}:settings:{category.id}:confirm_delete",
+                cancel_callback=f"{MENU_MY_CATEGORIES}:settings:{category.id}",
+                confirm_text="Delete",
+                cancel_text="Cancel",
+            )
+            await query.edit_message_text(
+                text="Are you sure you want to delete this category?",
+                reply_markup=reply_markup,
+            )
+            return
+        elif action == "confirm_delete":
             category.is_deleted = True
             session.commit()
             await query.answer("Category deleted.")
-            # TODO: Ask user for confirmation before deletion
-            # TODO: Redirect to my categories menu after deletion
+            await my_categories_menu(update, context)
+            return
 
         text = (
             "Editing Category:"
@@ -161,7 +179,7 @@ CATEGORY_HANDLER = [
     ConversationHandler(
         entry_points=[
             CallbackQueryHandler(
-                create_category_callback, pattern="^main:my_categories:create$"
+                create_category_callback, pattern=f"^{MENU_MY_CATEGORIES}:create$"
             )
         ],
         states={
@@ -171,15 +189,15 @@ CATEGORY_HANDLER = [
         },
         fallbacks=[
             CallbackQueryHandler(
-                cancel_category_creation, pattern="^main:my_categories$"
+                cancel_category_creation, pattern=f"^{MENU_MY_CATEGORIES}$"
             )
         ],
     ),
-    CallbackQueryHandler(my_categories_menu, pattern="^main:my_categories$"),
+    CallbackQueryHandler(my_categories_menu, pattern=f"^{MENU_MY_CATEGORIES}$"),
     CallbackQueryHandler(
-        edit_category_menu, pattern=r"^main:my_categories:settings:\d+$"
+        edit_category_menu, pattern=rf"^{MENU_MY_CATEGORIES}:settings:\d+$"
     ),
     CallbackQueryHandler(
-        edit_category_callback, pattern=r"^main:my_categories:settings:\d+:\w+$"
+        edit_category_callback, pattern=rf"^{MENU_MY_CATEGORIES}:settings:\d+:\w+"
     ),
 ]

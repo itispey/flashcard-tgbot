@@ -3,9 +3,9 @@ import math
 from datetime import datetime
 from typing import Self
 
-from sqlalchemy import DateTime, func, select
+from sqlalchemy import DateTime, func
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Mapped, Session, mapped_column
+from sqlalchemy.orm import Mapped, Query, Session, mapped_column
 
 logger = logging.getLogger(__name__)
 
@@ -50,19 +50,53 @@ class BaseModelMixin:
             return instance, False
 
     @classmethod
+    def filter(cls, db: Session, **kwargs) -> Query[Self]:
+        filter_items = []
+        for key, value in kwargs.items():
+            filter_items.append(getattr(cls, key) == value)
+
+        return db.query(cls).filter(*filter_items)
+
+    @classmethod
     def paginate(
-        cls, db: Session, current_page: int, per_page: int
+        cls, db: Session, current_page: int, per_page: int, filters: dict | None = None
     ) -> tuple[list[Self], int]:
         offset = (current_page - 1) * per_page
-        total_rows = db.execute(select(func.count(cls.id))).scalar()
-        last_page = math.ceil(total_rows / per_page)
+        query = db.query(cls)
+        if filters:
+            for key, value in filters.items():
+                column = getattr(cls, key, None)
+                if column is None:
+                    continue
+
+                # Support simple operators via tuple syntax, e.g., ("ne", value)
+                # Defaults to equality when a raw value is provided
+                if isinstance(value, tuple) and len(value) == 2:
+                    op, op_value = value
+                    if op == "ne":
+                        query = query.filter(column != op_value)
+                    elif op == "gt":
+                        query = query.filter(column > op_value)
+                    elif op == "lt":
+                        query = query.filter(column < op_value)
+                    elif op == "ge":
+                        query = query.filter(column >= op_value)
+                    elif op == "le":
+                        query = query.filter(column <= op_value)
+                    elif op == "in":
+                        query = query.filter(column.in_(op_value))
+                    elif op == "nin":
+                        query = query.filter(~column.in_(op_value))
+                    else:
+                        query = query.filter(column == op_value)
+                else:
+                    query = query.filter(column == value)
+
+        total_rows = query.with_entities(func.count(cls.id)).scalar()
+        last_page = math.ceil(total_rows / per_page) if total_rows else 1
 
         query = (
-            db.query(cls)
-            .order_by(cls.created_at.desc())
-            .limit(per_page)
-            .offset(offset)
-            .all()
+            query.order_by(cls.created_at.desc()).limit(per_page).offset(offset).all()
         )
 
         return query, last_page
