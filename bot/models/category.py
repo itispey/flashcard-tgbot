@@ -21,25 +21,25 @@ class Category(Base, BaseModelMixin):
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
 
     author: Mapped["User"] = relationship(back_populates="categories")
-    subscribers: Mapped[list["User"]] = relationship(
-        secondary="user_categories", back_populates="subscribed_categories"
+    bookmarks: Mapped[list["User"]] = relationship(
+        secondary="user_categories", back_populates="bookmarked_categories"
     )
 
     def __repr__(self):
         return f"<Category {self.name} by user {self.author_id}>"
 
     @hybrid_property
-    def subscribers_count(self):
-        return len(self.subscribers)
+    def bookmarks_count(self):
+        return len(self.bookmarks)
 
-    @subscribers_count.expression
-    def subscribers_count(cls):
+    @bookmarks_count.expression
+    def bookmarks_count(cls):
         from bot.models.user import User
 
         return (
             select(func.count(User.id))
             .select_from(cls)
-            .join(cls.subscribers)
+            .join(cls.bookmarks)
             .where(cls.id == cls.id)
             .correlate(cls)
             .scalar_subquery()

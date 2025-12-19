@@ -2,12 +2,13 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot.keyboards.main import return_inline_keyboard
 from bot.keyboards.paginated_inline_keyboard import build_paginated_inline_keyboard
+from bot.messages import ButtonTexts
 
 
 def create_category_inline_keyboard() -> list[InlineKeyboardButton]:
     return [
         InlineKeyboardButton(
-            text="+ Create a category", callback_data="main:my_categories:create"
+            text=ButtonTexts.CREATE_CATEGORY, callback_data="main:my_categories:create"
         )
     ]
 
@@ -31,17 +32,19 @@ def my_categories_inline_keyboard(
 def edit_category_inline_keyboard(
     category_id: int, is_public: bool
 ) -> InlineKeyboardMarkup:
-    visibility = "Public 🔓" if is_public else "Private 🔒"
+    visibility = (
+        ButtonTexts.VISIBILITY_PUBLIC if is_public else ButtonTexts.VISIBILITY_PRIVATE
+    )
     keyboard = [
         [
             InlineKeyboardButton(
-                text=("Visibility: {visibility}").format(visibility=visibility),
+                text=ButtonTexts.VISIBILITY_LABEL.format(visibility=visibility),
                 callback_data=f"main:my_categories:settings:{category_id}:change_visibility",
             )
         ],
         [
             InlineKeyboardButton(
-                text="Delete Category ❌",
+                text=ButtonTexts.DELETE_CATEGORY,
                 callback_data=f"main:my_categories:settings:{category_id}:delete",
             )
         ],

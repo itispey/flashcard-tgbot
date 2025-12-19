@@ -21,8 +21,8 @@ class User(Base, BaseModelMixin):
     categories: Mapped[Optional[List["Category"]]] = relationship(
         back_populates="author"
     )
-    subscribed_categories: Mapped[Optional[List["Category"]]] = relationship(
-        secondary="user_categories", back_populates="subscribers"
+    bookmarked_categories: Mapped[Optional[List["Category"]]] = relationship(
+        secondary="user_categories", back_populates="bookmarks"
     )
 
     def __repr__(self):

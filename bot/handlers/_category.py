@@ -11,60 +11,27 @@ from telegram.ext import (
 
 from bot.keyboards.category import (
     edit_category_inline_keyboard,
-    my_categories_inline_keyboard,
 )
 from bot.keyboards.confirmation import confirmation_inline_keyboard
 from bot.keyboards.main import return_inline_keyboard
+from bot.messages import ButtonTexts, Messages
 from bot.models.category import Category
 from bot.utils.helpers.db import SessionLocal
 from bot.utils.helpers.handlers import end_conversation
 
 logger = logging.getLogger(__name__)
 
-MENU_MY_CATEGORIES = "main:my_categories"
+MENU_CATEGORIES = "main:categories"
 CATEGORY_NAME = 1
-
-
-async def my_categories_menu(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-) -> None:
-    query = update.callback_query
-    blocks = query.data.split(":")
-    page_number = int(blocks[3]) if len(blocks) == 4 else 1
-
-    with SessionLocal() as session:
-        categories, total_pages = Category.paginate(
-            db=session,
-            current_page=page_number,
-            per_page=5,
-            filters={"is_deleted": False},
-        )
-
-        if not categories:
-            text = "You don't have any category! Try making a new one by tapping the button below."
-        else:
-            text = "Here's are your categories:"
-
-        categories_data = [(cat.id, cat.name) for cat in categories]
-        reply_markup = my_categories_inline_keyboard(
-            data=categories_data,
-            current_menu=MENU_MY_CATEGORIES,
-            current_page=page_number,
-            total_pages=total_pages,
-            return_to_menu="main",
-        )
-
-        await query.answer()
-        await query.edit_message_text(text=text, reply_markup=reply_markup)
 
 
 async def create_category_callback(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
     query = update.callback_query
-    text = "Please write a name for the category."
+    text = Messages.CATEGORY_NAME_PROMPT
     reply_markup = InlineKeyboardMarkup(
-        [return_inline_keyboard(target_menu=MENU_MY_CATEGORIES)]
+        [return_inline_keyboard(target_menu=MENU_CATEGORIES)]
     )
     await query.answer()
     await query.edit_message_text(text=text, reply_markup=reply_markup)
@@ -74,6 +41,8 @@ async def create_category_callback(
 async def create_category_message(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
+    from bot.handlers.collection import collections_menu_message
+
     user = update.effective_user
     message = update.message
     text = message.text
@@ -82,8 +51,11 @@ async def create_category_message(
         category = Category.create(db=session, name=text, author_id=user.id)
         logger.info("Category created: %s", category.name)
 
-    await update.message.reply_text("Done")
-    return ConversationHandler.END
+        await update.message.reply_text(Messages.CATEGORY_CREATED)
+        await collections_menu_message(
+            update=update, context=context, category_id=category.id
+        )
+        return ConversationHandler.END
 
 
 async def cancel_category_creation(
@@ -103,15 +75,15 @@ async def edit_category_menu(
         category = Category.filter(db=session, id=category_id, is_deleted=False).first()
 
         if not category:
-            await query.answer("Category not found.", True)
+            await query.answer(Messages.CATEGORY_NOT_FOUND, True)
             return
 
-        text = (
-            "Editing Category:"
-            "\n"
-            f"\n- Name: {category.name}"
-            f"\n- Current Visibility: {category.is_public and 'Public' or 'Private'}"
-            f"\n- Subscribers: {category.subscribers_count}"
+        text = Messages.CATEGORY_DETAIL.format(
+            name=category.name,
+            visibility=Messages.VISIBILITY_PUBLIC
+            if category.is_public
+            else Messages.VISIBILITY_PRIVATE,
+            count=category.bookmarks_count,
         )
         reply_markup = edit_category_inline_keyboard(
             category_id=category.id,
@@ -134,39 +106,39 @@ async def edit_category_callback(
         category = Category.filter(db=session, id=category_id, is_deleted=False).first()
 
         if not category:
-            await query.answer("Category not found.", True)
+            await query.answer(Messages.CATEGORY_NOT_FOUND, True)
             return
 
         if action == "change_visibility":
             category.is_public = not category.is_public
             session.commit()
-            await query.answer("Category visibility updated.")
+            await query.answer(Messages.CATEGORY_VISIBILITY_UPDATED)
 
         if action == "delete":
             reply_markup = confirmation_inline_keyboard(
-                confirm_callback=f"{MENU_MY_CATEGORIES}:settings:{category.id}:confirm_delete",
-                cancel_callback=f"{MENU_MY_CATEGORIES}:settings:{category.id}",
-                confirm_text="Delete",
-                cancel_text="Cancel",
+                confirm_callback=f"{MENU_CATEGORIES}:settings:{category.id}:confirm_delete",
+                cancel_callback=f"{MENU_CATEGORIES}:settings:{category.id}",
+                confirm_text=ButtonTexts.DELETE,
+                cancel_text=ButtonTexts.CANCEL,
             )
             await query.edit_message_text(
-                text="Are you sure you want to delete this category?",
+                text=Messages.CATEGORY_DELETION_CONFIRM,
                 reply_markup=reply_markup,
             )
             return
         elif action == "confirm_delete":
             category.is_deleted = True
             session.commit()
-            await query.answer("Category deleted.")
-            await my_categories_menu(update, context)
+            await query.answer(Messages.CATEGORY_DELETED)
+            # await my_categories_menu(update, context)
             return
 
-        text = (
-            "Editing Category:"
-            "\n"
-            f"\n- Name: {category.name}"
-            f"\n- Current Visibility: {category.is_public and 'Public' or 'Private'}"
-            f"\n- Subscribers: {category.subscribers_count}"
+        text = Messages.CATEGORY_DETAIL.format(
+            name=category.name,
+            visibility=Messages.VISIBILITY_PUBLIC
+            if category.is_public
+            else Messages.VISIBILITY_PRIVATE,
+            count=category.bookmarks_count,
         )
         reply_markup = edit_category_inline_keyboard(
             category_id=category.id,
@@ -179,7 +151,7 @@ CATEGORY_HANDLER = [
     ConversationHandler(
         entry_points=[
             CallbackQueryHandler(
-                create_category_callback, pattern=f"^{MENU_MY_CATEGORIES}:create$"
+                create_category_callback, pattern=f"^{MENU_CATEGORIES}:create$"
             )
         ],
         states={
@@ -189,15 +161,15 @@ CATEGORY_HANDLER = [
         },
         fallbacks=[
             CallbackQueryHandler(
-                cancel_category_creation, pattern=f"^{MENU_MY_CATEGORIES}$"
+                cancel_category_creation, pattern=f"^{MENU_CATEGORIES}$"
             )
         ],
     ),
-    CallbackQueryHandler(my_categories_menu, pattern=f"^{MENU_MY_CATEGORIES}$"),
+    # CallbackQueryHandler(my_categories_menu, pattern=f"^{MENU_CATEGORIES}$"),
     CallbackQueryHandler(
-        edit_category_menu, pattern=rf"^{MENU_MY_CATEGORIES}:settings:\d+$"
+        edit_category_menu, pattern=rf"^{MENU_CATEGORIES}:settings:\d+$"
     ),
     CallbackQueryHandler(
-        edit_category_callback, pattern=rf"^{MENU_MY_CATEGORIES}:settings:\d+:\w+"
+        edit_category_callback, pattern=rf"^{MENU_CATEGORIES}:settings:\d+:\w+"
     ),
 ]

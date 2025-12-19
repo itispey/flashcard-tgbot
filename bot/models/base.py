@@ -59,10 +59,16 @@ class BaseModelMixin:
 
     @classmethod
     def paginate(
-        cls, db: Session, current_page: int, per_page: int, filters: dict | None = None
+        cls,
+        db: Session,
+        current_page: int,
+        per_page: int,
+        filters: dict | None = None,
+        base_query: Query[Self] | None = None,
     ) -> tuple[list[Self], int]:
         offset = (current_page - 1) * per_page
-        query = db.query(cls)
+        query = base_query if base_query is not None else db.query(cls)
+
         if filters:
             for key, value in filters.items():
                 column = getattr(cls, key, None)

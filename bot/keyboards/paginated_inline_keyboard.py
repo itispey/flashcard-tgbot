@@ -1,5 +1,7 @@
 from telegram import InlineKeyboardButton
 
+from bot.messages import ButtonTexts
+
 
 def build_paginated_inline_keyboard(
     data: list[tuple[int, str]], current_menu: str, current_page: int, total_pages: int
@@ -29,7 +31,8 @@ def build_paginated_inline_keyboard(
                 text=item[1], callback_data=f"{current_menu}:select:{item[0]}"
             ),
             InlineKeyboardButton(
-                text="⚙️", callback_data=f"{current_menu}:settings:{item[0]}"
+                text=ButtonTexts.SETTINGS,
+                callback_data=f"{current_menu}:settings:{item[0]}",
             ),
         ]
         for item in data
@@ -42,10 +45,11 @@ def build_paginated_inline_keyboard(
             pagination_row.extend(
                 [
                     InlineKeyboardButton(
-                        text="<<", callback_data=f"{current_menu}:page:1"
+                        text=ButtonTexts.FIRST_PAGE,
+                        callback_data=f"{current_menu}:page:1",
                     ),
                     InlineKeyboardButton(
-                        text="<",
+                        text=ButtonTexts.PREVIOUS_PAGE,
                         callback_data=f"{current_menu}:page:{current_page - 1}",
                     ),
                 ]
@@ -62,11 +66,12 @@ def build_paginated_inline_keyboard(
             pagination_row.extend(
                 [
                     InlineKeyboardButton(
-                        text=">",
+                        text=ButtonTexts.NEXT_PAGE,
                         callback_data=f"{current_menu}:page:{current_page + 1}",
                     ),
                     InlineKeyboardButton(
-                        text=">>", callback_data=f"{current_menu}:page:{total_pages}"
+                        text=ButtonTexts.LAST_PAGE,
+                        callback_data=f"{current_menu}:page:{total_pages}",
                     ),
                 ]
             )

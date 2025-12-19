@@ -3,13 +3,24 @@ from telegram import (
     InlineKeyboardMarkup,
 )
 
+from bot.messages import ButtonTexts
+
 
 def main_inline_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
-        [InlineKeyboardButton("Categories", callback_data="main:my_categories")],
         [
             InlineKeyboardButton(
-                "Public Categories", callback_data="main:public_categories"
+                ButtonTexts.MAKE_FLASHCARD, callback_data="main:categories:my"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                ButtonTexts.BOOKMARKS, callback_data="main:categories:bookmarks"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                ButtonTexts.POPULAR_FLASHCARDS, callback_data="main:categories:public"
             )
         ],
     ]
@@ -17,14 +28,5 @@ def main_inline_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
-def select_language_keyboard() -> InlineKeyboardMarkup:
-    keyboard = [
-        [InlineKeyboardButton("English 🇬🇧", callback_data="set_lang:en")],
-        [InlineKeyboardButton("فارسی 🇮🇷", callback_data="set_lang:fa")],
-    ]
-
-    return InlineKeyboardMarkup(keyboard)
-
-
 def return_inline_keyboard(target_menu: str) -> list[InlineKeyboardButton]:
-    return [InlineKeyboardButton(text="🔙 Back", callback_data=target_menu)]
+    return [InlineKeyboardButton(text=ButtonTexts.BACK, callback_data=target_menu)]
