@@ -12,3 +12,9 @@ dependencies = [
     "python-telegram-bot==22.5",
     "sqlalchemy==2.0.44",
 ]
+
+[dependency-groups]
+dev = [
+    "faker>=38.2.0",
+    "ipython>=9.8.0",
+]
