@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -12,11 +10,11 @@ class Flashcard(Base, BaseModelMixin):
 
     term: Mapped[str] = mapped_column(Text, nullable=False)
     definition: Mapped[str] = mapped_column(Text, nullable=False)
-    photo_file_id: Mapped[Optional[str]] = mapped_column(String(64))
-    synonym: Mapped[Optional[str]] = mapped_column(Text)
-    antonym: Mapped[Optional[str]] = mapped_column(Text)
-    collocation: Mapped[Optional[str]] = mapped_column(Text)
-    example: Mapped[Optional[str]] = mapped_column(Text)
+    photo_file_id: Mapped[str | None] = mapped_column(String(64))
+    synonym: Mapped[str | None] = mapped_column(Text)
+    antonym: Mapped[str | None] = mapped_column(Text)
+    collocation: Mapped[str | None] = mapped_column(Text)
+    example: Mapped[str | None] = mapped_column(Text)
     collection_id: Mapped[int] = mapped_column(ForeignKey("collections.id"))
 
     # collection: Mapped["Collection"] = relationship(back_populates="flashcards")

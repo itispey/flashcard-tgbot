@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, ForeignKey, String, func, select
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -15,7 +15,7 @@ class Category(Base, BaseModelMixin):
     __tablename__ = "categories"
 
     name: Mapped[str] = mapped_column(String(64), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(String(255))
     author_id: Mapped[int] = mapped_column(ForeignKey("users.tg_id"))
     is_public: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, index=True)

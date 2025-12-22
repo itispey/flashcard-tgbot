@@ -1,5 +1,3 @@
-from typing import List, Optional
-
 from sqlalchemy import BigInteger, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,13 +13,11 @@ class User(Base, BaseModelMixin):
         BigInteger, nullable=False, unique=True, index=True
     )
     first_name: Mapped[str] = mapped_column(String(255))
-    last_name: Mapped[Optional[str]] = mapped_column(String(255))
-    username: Mapped[Optional[str]] = mapped_column(String(32))
+    last_name: Mapped[str | None] = mapped_column(String(255))
+    username: Mapped[str | None] = mapped_column(String(32))
 
-    categories: Mapped[Optional[List["Category"]]] = relationship(
-        back_populates="author"
-    )
-    bookmarked_categories: Mapped[Optional[List["Category"]]] = relationship(
+    categories: Mapped[list["Category"] | None] = relationship(back_populates="author")
+    bookmarked_categories: Mapped[list["Category"] | None] = relationship(
         secondary="user_categories", back_populates="bookmarks"
     )
 
