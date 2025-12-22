@@ -2,13 +2,14 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from telegram.ext._handlers.callbackqueryhandler import CallbackQueryHandler
 
+from bot.constants import Callbacks
 from bot.handlers._category import MENU_CATEGORIES
 from bot.keyboards.collection import collections_inline_keyboard
 from bot.messages import Messages
 from bot.models.collection import Collection
 from bot.utils.helpers.db import SessionLocal
 
-MENU_COLLECTIONS = "main:collections"
+MENU_COLLECTIONS = Callbacks.COLLECTIONS
 
 
 def collections_menu(category_id: int, page_number: int = 1):

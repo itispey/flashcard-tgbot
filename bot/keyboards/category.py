@@ -1,5 +1,6 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+from bot.constants import Callbacks
 from bot.keyboards.main import return_inline_keyboard
 from bot.keyboards.paginated_inline_keyboard import build_paginated_inline_keyboard
 from bot.messages import ButtonTexts
@@ -8,7 +9,8 @@ from bot.messages import ButtonTexts
 def create_category_inline_keyboard() -> list[InlineKeyboardButton]:
     return [
         InlineKeyboardButton(
-            text=ButtonTexts.CREATE_CATEGORY, callback_data="main:my_categories:create"
+            text=ButtonTexts.CREATE_CATEGORY,
+            callback_data=f"{Callbacks.MY_CATEGORIES}:create",
         )
     ]
 
@@ -39,19 +41,19 @@ def edit_category_inline_keyboard(
         [
             InlineKeyboardButton(
                 text=ButtonTexts.VISIBILITY_LABEL.format(visibility=visibility),
-                callback_data=f"main:my_categories:settings:{category_id}:change_visibility",
+                callback_data=f"{Callbacks.MY_CATEGORIES}:settings:{category_id}:change_visibility",
             )
         ],
         [
             InlineKeyboardButton(
                 text=ButtonTexts.DELETE_CATEGORY,
-                callback_data=f"main:my_categories:settings:{category_id}:delete",
+                callback_data=f"{Callbacks.MY_CATEGORIES}:settings:{category_id}:delete",
             )
         ],
     ]
     keyboard.append(
         return_inline_keyboard(
-            target_menu="main:my_categories",
+            target_menu=Callbacks.MY_CATEGORIES,
         )
     )
 

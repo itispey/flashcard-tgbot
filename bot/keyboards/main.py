@@ -3,6 +3,7 @@ from telegram import (
     InlineKeyboardMarkup,
 )
 
+from bot.constants import Callbacks
 from bot.messages import ButtonTexts
 
 
@@ -10,17 +11,18 @@ def main_inline_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
         [
             InlineKeyboardButton(
-                ButtonTexts.MAKE_FLASHCARD, callback_data="main:categories:my"
+                ButtonTexts.MAKE_FLASHCARD, callback_data=Callbacks.MY_CATEGORIES
             )
         ],
         [
             InlineKeyboardButton(
-                ButtonTexts.BOOKMARKS, callback_data="main:categories:bookmarks"
+                ButtonTexts.BOOKMARKS, callback_data=Callbacks.BOOKMARKS
             )
         ],
         [
             InlineKeyboardButton(
-                ButtonTexts.POPULAR_FLASHCARDS, callback_data="main:categories:public"
+                ButtonTexts.POPULAR_FLASHCARDS,
+                callback_data=Callbacks.PUBLIC_CATEGORIES,
             )
         ],
     ]
