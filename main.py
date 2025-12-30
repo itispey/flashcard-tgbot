@@ -6,6 +6,7 @@ from bot import models
 
 # from bot.handlers._category import CATEGORY_HANDLER
 from bot.handlers.categories.my_categories import MY_CATEGORIES_HANDLERS
+from bot.handlers.collections.collections import COLLECION_HANDLERS
 from bot.handlers.main import MAIN_HANDLER
 from bot.utils.helpers.db import engine
 from config import Config
@@ -32,6 +33,7 @@ def main() -> None:
 
     app.add_handlers(MAIN_HANDLER)
     app.add_handlers(MY_CATEGORIES_HANDLERS)
+    app.add_handlers(COLLECION_HANDLERS)
 
     app.run_polling()
 

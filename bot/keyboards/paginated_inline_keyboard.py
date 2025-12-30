@@ -4,7 +4,11 @@ from bot.messages import ButtonTexts
 
 
 def build_paginated_inline_keyboard(
-    data: list[tuple[int, str]], current_menu: str, current_page: int, total_pages: int
+    data: list[tuple[int, str]],
+    current_menu: str,
+    next_menu: str,
+    current_page: int,
+    total_pages: int,
 ) -> list[InlineKeyboardButton]:
     """
     Builds a paginated inline keyboard for a Telegram bot.
@@ -28,7 +32,7 @@ def build_paginated_inline_keyboard(
     keyboard = [
         [
             InlineKeyboardButton(
-                text=item[1], callback_data=f"{current_menu}:select:{item[0]}"
+                text=item[1], callback_data=f"{next_menu}:{item[0]}:page:1"
             ),
             InlineKeyboardButton(
                 text=ButtonTexts.SETTINGS,

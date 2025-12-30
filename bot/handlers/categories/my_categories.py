@@ -28,7 +28,7 @@ async def my_categories_menu_callback(
 ) -> None:
     query = update.callback_query
     blocks = query.data.split(":")
-    page_number = int(blocks[4]) if len(blocks) == 5 else 1
+    page_number = int(blocks[3]) if len(blocks) == 4 else 1
 
     with SessionLocal() as session:
         categories, total_pages = get_categories(
@@ -44,9 +44,10 @@ async def my_categories_menu_callback(
         reply_markup = my_categories_inline_keyboard(
             data=categories_data,
             current_menu=Callbacks.MY_CATEGORIES,
+            next_menu=Callbacks.COLLECTIONS,
             current_page=page_number,
             total_pages=total_pages,
-            return_to_menu="main",
+            return_to_menu=Callbacks.MAIN,
         )
 
         await query.answer()
@@ -69,7 +70,7 @@ async def create_category_callback(
 async def create_category_message(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
-    # from bot.handlers.collection import collections_menu_message
+    from bot.handlers.collections.collections import collections_menu_message
 
     user = update.effective_user
     message = update.message
@@ -80,9 +81,9 @@ async def create_category_message(
         logger.info("Category created: %s", category.name)
 
         await update.message.reply_text(Messages.CATEGORY_CREATED)
-        # await collections_menu_message(
-        #     update=update, context=context, category_id=category.id
-        # )
+        await collections_menu_message(
+            update=update, context=context, category_id=category.id
+        )
         return ConversationHandler.END
 
 
@@ -97,7 +98,7 @@ async def edit_category_menu(
 ) -> None:
     query = update.callback_query
     blocks = query.data.split(":")
-    category_id = int(blocks[4])
+    category_id = int(blocks[3])
 
     with SessionLocal() as session:
         category = Category.filter(db=session, id=category_id, is_deleted=False).first()
@@ -127,8 +128,8 @@ async def edit_category_callback(
 ) -> None:
     query = update.callback_query
     blocks = query.data.split(":")
-    category_id = int(blocks[4])
-    action = blocks[5]
+    category_id = int(blocks[3])
+    action = blocks[4]
 
     with SessionLocal() as session:
         category = Category.filter(db=session, id=category_id, is_deleted=False).first()
