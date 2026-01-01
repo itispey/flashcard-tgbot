@@ -25,7 +25,12 @@ def collections_inline_keyboard(
 ) -> InlineKeyboardMarkup:
     current_menu = f"{Callbacks.COLLECTIONS}:{category_id}"
     paginated_keyboard = build_paginated_inline_keyboard(
-        data, current_menu, next_menu, current_page, total_pages
+        data=data,
+        current_menu=current_menu,
+        next_menu=next_menu,
+        current_page=current_page,
+        total_pages=total_pages,
+        action_type="delete",
     )
     paginated_keyboard.insert(0, create_collection_inline_keyboard(category_id))
     paginated_keyboard.append(return_inline_keyboard(target_menu=return_to_menu))

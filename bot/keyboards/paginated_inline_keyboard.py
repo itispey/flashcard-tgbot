@@ -1,3 +1,5 @@
+from typing import Literal
+
 from telegram import InlineKeyboardButton
 
 from bot.messages import ButtonTexts
@@ -9,6 +11,7 @@ def build_paginated_inline_keyboard(
     next_menu: str,
     current_page: int,
     total_pages: int,
+    action_type: Literal["settings", "delete"] = "settings",
 ) -> list[InlineKeyboardButton]:
     """
     Builds a paginated inline keyboard for a Telegram bot.
@@ -19,24 +22,33 @@ def build_paginated_inline_keyboard(
         current_menu (str): The identifier for the current menu, used in callback data.
         current_page (int): The current page number being displayed.
         total_pages (int): The total number of pages available.
+        action_type (Literal["settings", "delete"]): The type of action button to display.
+            Defaults to "settings".
 
     Returns:
         list[InlineKeyboardButton]: A list of InlineKeyboardButton objects representing
             the inline keyboard layout, including pagination controls if applicable.
 
     The keyboard includes:
-        - Buttons for each item in the `data` list, with a "select" and "settings" option.
+        - Buttons for each item in the `data` list, with a "select" and "settings"/"delete" option.
         - Pagination controls (<<, <, current page indicator, >, >>) if there are
           multiple pages.
     """
+    if action_type == "delete":
+        action_text = ButtonTexts.DELETE_EMOJI
+        action_callback = "delete"
+    else:
+        action_text = ButtonTexts.SETTINGS_EMOJI
+        action_callback = "settings"
+
     keyboard = [
         [
             InlineKeyboardButton(
                 text=item[1], callback_data=f"{next_menu}:{item[0]}:page:1"
             ),
             InlineKeyboardButton(
-                text=ButtonTexts.SETTINGS,
-                callback_data=f"{current_menu}:settings:{item[0]}",
+                text=action_text,
+                callback_data=f"{current_menu}:{action_callback}:{item[0]}",
             ),
         ]
         for item in data

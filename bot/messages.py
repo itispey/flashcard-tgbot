@@ -56,13 +56,14 @@ class ButtonTexts:
 
     # Actions
     DELETE_CATEGORY = "Delete Category ❌"
-    CONFIRM = "Confirm"
-    DELETE = "Delete"
-    CANCEL = "Cancel"
+    CONFIRM = "✅ Confirm"
+    DELETE = "❌ Delete"
+    CANCEL = "🚫 Cancel"
+    DELETE_EMOJI = "❌"
+    SETTINGS_EMOJI = "⚙️"
 
     # Pagination
     FIRST_PAGE = "<<"
     PREVIOUS_PAGE = "<"
     NEXT_PAGE = ">"
     LAST_PAGE = ">>"
-    SETTINGS = "⚙️"
