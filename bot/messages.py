@@ -14,6 +14,7 @@ class Messages:
     CATEGORY_VISIBILITY_UPDATED = "Category visibility updated."
     CATEGORY_DELETION_CONFIRM = "Are you sure you want to delete this category?"
     CATEGORY_DELETED = "Category deleted."
+    CATEGORY_ID_NOT_FOUND = "Category not found. Please select a category first."
 
     # Category details
     CATEGORY_DETAIL = (

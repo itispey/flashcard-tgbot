@@ -1,7 +1,7 @@
 from collections.abc import Awaitable, Callable
 
-from telegram import ReplyKeyboardRemove, Update
-from telegram.ext import ConversationHandler, ContextTypes
+from telegram import Update
+from telegram.ext import ContextTypes, ConversationHandler
 
 
 async def answer_and_send_message(
@@ -57,15 +57,19 @@ async def end_conversation(
 
     if message:
         if update.callback_query:
-            await context.bot.send_message(
-                chat_id=update.effective_user.id,
-                text=message,
-                reply_markup=ReplyKeyboardRemove(),
-            )
+            await update.callback_query.edit_message_text(text=message)
         else:
-            await update.message.reply_text(message, reply_markup=ReplyKeyboardRemove())
+            await update.message.reply_text(message)
 
     if callback:
         await callback(update, context)
 
     return ConversationHandler.END
+
+
+def cache_page_number(context: ContextTypes.DEFAULT_TYPE, page_number: int) -> None:
+    context.user_data["page_number"] = page_number
+
+
+def get_page_number(context: ContextTypes.DEFAULT_TYPE) -> int:
+    return context.user_data.get("page_number", 1)

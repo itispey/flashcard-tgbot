@@ -1,9 +1,11 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ContextTypes
 
 from bot.constants import Callbacks
 from bot.keyboards.main import return_inline_keyboard
 from bot.keyboards.paginated_inline_keyboard import build_paginated_inline_keyboard
 from bot.messages import ButtonTexts
+from bot.utils.helpers.handlers import get_page_number
 
 
 def create_category_inline_keyboard() -> list[InlineKeyboardButton]:
@@ -33,8 +35,9 @@ def my_categories_inline_keyboard(
 
 
 def edit_category_inline_keyboard(
-    category_id: int, is_public: bool
+    context: ContextTypes.DEFAULT_TYPE, category_id: int, is_public: bool
 ) -> InlineKeyboardMarkup:
+    last_page_number = get_page_number(context=context)
     visibility = (
         ButtonTexts.VISIBILITY_PUBLIC if is_public else ButtonTexts.VISIBILITY_PRIVATE
     )
@@ -54,7 +57,7 @@ def edit_category_inline_keyboard(
     ]
     keyboard.append(
         return_inline_keyboard(
-            target_menu=Callbacks.MY_CATEGORIES,
+            target_menu=f"{Callbacks.MY_CATEGORIES}:page:{last_page_number}",
         )
     )
 

@@ -16,7 +16,7 @@ from bot.messages import ButtonTexts, Messages
 from bot.models.category import Category
 from bot.queries.category import get_categories
 from bot.utils.helpers.db import SessionLocal
-from bot.utils.helpers.handlers import end_conversation
+from bot.utils.helpers.handlers import cache_page_number, end_conversation
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +49,8 @@ async def my_categories_menu_callback(
             total_pages=total_pages,
             return_to_menu=Callbacks.MAIN,
         )
+
+        cache_page_number(context=context, page_number=page_number)
 
         await query.answer()
         await query.edit_message_text(text, reply_markup=reply_markup)
@@ -115,6 +117,7 @@ async def edit_category_menu(
             count=category.bookmarks_count,
         )
         reply_markup = edit_category_inline_keyboard(
+            context=context,
             category_id=category.id,
             is_public=category.is_public,
         )
@@ -170,6 +173,7 @@ async def edit_category_callback(
             count=category.bookmarks_count,
         )
         reply_markup = edit_category_inline_keyboard(
+            context=context,
             category_id=category.id,
             is_public=category.is_public,
         )
@@ -202,6 +206,6 @@ MY_CATEGORIES_HANDLERS = [
     ),
     CallbackQueryHandler(
         my_categories_menu_callback,
-        pattern=f"^{Callbacks.MY_CATEGORIES}(?::page(?::\d+)?)?$",
+        pattern=rf"^{Callbacks.MY_CATEGORIES}(?::page(?::\d+)?)?$",
     ),
 ]
